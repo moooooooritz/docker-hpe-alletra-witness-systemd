@@ -1,16 +1,32 @@
+# Docker Compose configuration for HPE Witness System
+# This setup runs the HPE Witness service in a containerized environment
+# using systemd integration for proper service management.
+
 services:
+  # Main service for HPE Witness
   hpe-witness:
+    # Build the image from the current directory (uses Dockerfile)
     build: .
+    # Name the container for easy identification
     container_name: hpe-witness
+    # Run in privileged mode to allow systemd and cgroup access
     privileged: true
+    # Restart policy: always restart unless manually stopped
     restart: unless-stopped
+    # Expose port 5395 from container to host
     ports:
       - "5395:5395"
+    # Mount volumes for logs, private data, and cgroup access
     volumes:
+      # Mount cgroup filesystem for systemd compatibility
       - /sys/fs/cgroup:/sys/fs/cgroup
+      # Mount log directory to persist logs
       - ./log:/var/log/NimbleStorage
+      # Mount private witness data directory
       - ./witness/private:/opt/NimbleStorage/witness/var/private
+    # Use host cgroup namespace for systemd
     cgroup: host
+    # Health check to ensure the nimble-witnessd service is active
     healthcheck:
       test: ["CMD-SHELL", "systemctl is-active --quiet nimble-witnessd"]
       interval: 30s

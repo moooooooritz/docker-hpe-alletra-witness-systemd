@@ -18,6 +18,9 @@ RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ "$i" = syste
     rm -f /lib/systemd/system/basic.target.wants/*; \
     rm -f /lib/systemd/system/anaconda.target.wants/*
 
+# Copy Witness RPM
+COPY hpe-alletra-witness*.rpm /root/
+
 # Packages and Witness RPM installation
 RUN yum -y update && \
     yum -y install passwd net-tools psmisc mlocate epel-release openssl openssl-libs && \
