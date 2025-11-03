@@ -1,23 +1,35 @@
 # HPE Alletra / Nimble Witness in Docker (Rocky Linux + systemd)
 
-## Übersicht
-Dieses Setup erstellt einen containerisierten **HPE Nimble/Alletra Witness** auf Basis von **Rocky Linux 8.4** mit systemd.  
-Es enthält:
-- ein Dockerfile zum Bauen des Images  
-- ein `docker-compose.yml` für Start & Healthcheck  
-- alle nötigen Befehle zur Vorbereitung der Host-Verzeichnisse  
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
+
+A containerized HPE Nimble/Alletra Witness service running on Rocky Linux with systemd.
+
+## Features
+
+- Based on Rocky Linux 8.4 with systemd
+- Includes health checks
+- Supports persistent data mounts
+- Easy deployment with Docker Compose
+
+## Overview
+This setup creates a containerized **HPE Nimble/Alletra Witness** based on **Rocky Linux 8.4** with systemd.
+It is designed for HPE Alletra systems based on NimbleOS (e.g., Alletra 5000, 6000).
+It includes:
+- a Dockerfile to build the image
+- a `docker-compose.yml` for start & healthcheck
+- all necessary commands to prepare host directories
 
 ---
 
-## 1. Voraussetzungen
-- Docker und Docker Compose installiert  
-- Witness-RPM im Projektverzeichnis:  
-  `hpe-alletra-witness-<version>.rpm`
-- Host muss systemd-basierte Container unterstützen (`--privileged`, `/sys/fs/cgroup` gemountet)
+## 1. Prerequisites
+- Docker and Docker Compose installed
+- Witness-RPM in project directory:
+  `hpe-alletra-witness-<version>.rpm` (obtain from infosight.hpe.com)
+- Host must support systemd-based containers (`--privileged`, `/sys/fs/cgroup` mounted)
 
 ---
 
-## 2. Verzeichnisstruktur
+## 2. Directory Structure
 
 ```
 /docker/witness2
@@ -30,7 +42,7 @@ Es enthält:
 
 ---
 
-## 3. Image bauen
+## 3. Build Image
 
 ```bash
 cd /docker/witness2
@@ -39,61 +51,60 @@ docker build -t hpe-witness:1 .
 
 ---
 
-## 4. Erster Start (ohne private-Mount)
+## 4. First Start (without private mount)
 
-1. In `docker-compose.yml` die Zeile  
+1. In `docker-compose.yml` comment out the line
    ```yaml
    - ./witness/private:/opt/NimbleStorage/witness/var/private
-   ```  
-   **auskommentieren**.
+   ```
 
-2. Container starten:
+2. Start container:
    ```bash
    docker compose up -d
    ```
 
-3. Prüfen:
+3. Check:
    ```bash
    docker exec -it hpe-witness systemctl status nimble-witnessd
    ```
-   → Dienst sollte **active (running)** sein.
+   → Service should be **active (running)**.
 
 ---
 
-## 5. Witness-Daten auf den Host kopieren
+## 5. Copy Witness Data to Host
 
 ```bash
 docker cp hpe-witness:/opt/NimbleStorage/witness/var/private ./witness
 ```
 
-Jetzt existiert auf dem Host: `./witness/private/...`
+Now exists on host: `./witness/private/...`
 
 ---
 
-## 6. UID/GID anpassen
+## 6. Adjust UID/GID
 
-Im Container prüfen:
+Check in container:
 ```bash
 docker exec -it hpe-witness getent passwd witness || docker exec -it hpe-witness id witness
 ```
 
-Beispielausgabe:
+Example output:
 ```
 witness:x:1000:1000:...
 ```
 
-Dann auf dem Host:
+Then on host:
 ```bash
 sudo chown -R 1000:1000 ./witness ./log
 sudo chmod -R 770 ./witness ./log
 ```
-(Bei anderer UID/GID diese Werte ersetzen.)
+(Replace with other UID/GID if different.)
 
 ---
 
-## 7. Compose-Datei mit Mount aktivieren
+## 7. Activate Compose File with Mount
 
-`docker-compose.yml` wiederherstellen:
+Restore `docker-compose.yml`:
 
 ```yaml
 volumes:
@@ -102,12 +113,12 @@ volumes:
   - ./witness/private:/opt/NimbleStorage/witness/var/private
 ```
 
-Dann Container neu starten:
+Then restart container:
 ```bash
 docker compose up -d
 ```
 
-Status prüfen:
+Check status:
 ```bash
 docker exec -it hpe-witness systemctl status nimble-witnessd
 docker exec -it hpe-witness tail -n 200 /var/log/NimbleStorage/witnessd.log
@@ -117,7 +128,7 @@ docker exec -it hpe-witness tail -n 200 /var/log/NimbleStorage/witnessd.log
 
 ## 8. Healthcheck
 
-In der Compose-Datei ist ein Healthcheck definiert:
+In the compose file is a healthcheck defined:
 
 ```yaml
 healthcheck:
@@ -128,18 +139,18 @@ healthcheck:
   start_period: 40s
 ```
 
-Docker zeigt den Container als **healthy**, sobald `systemd` meldet, dass der Dienst läuft.
+Docker shows the container as **healthy** once `systemd` reports that the service is running.
 
 ---
 
 ## 9. Troubleshooting
 
-| Problem | Ursache / Lösung |
+| Problem | Cause / Solution |
 |----------|------------------|
-| **Exit 134** | Meist falscher oder unvollständiger Inhalt in `./witness/...`. Neues Verzeichnis aus funktionierendem Container kopieren. |
-| **Permission denied** | Host-Ordner nicht auf Container-UID (`witness`) gesetzt → `chown -R`. |
-| **`array/` fehlt** | Normal – wird erst erzeugt, wenn sich ein Array beim Witness registriert. |
-| **Dienst startet nicht** | Prüfen mit `journalctl -u nimble-witnessd -xe` im Container. |
+| **Exit 134** | Usually wrong or incomplete content in `./witness/...`. Copy new directory from working container. |
+| **Permission denied** | Host folders not set to container UID (`witness`) → `chown -R`. |
+| **`array/` missing** | Normal – created only when an array registers with the Witness. |
+| **Service does not start** | Check with `journalctl -u nimble-witnessd -xe` in container. |
 
 Logs:
 ```bash
@@ -149,10 +160,14 @@ docker exec -it hpe-witness journalctl -u nimble-witnessd -f
 
 ---
 
-## 10. Verbindung vom Array
-Der Witness lauscht auf Port **5395**.  
-Im Array unter „Quorum Witness“ die IP des Docker-Hosts und Port **5395** eintragen.
+## 10. Connection from Array
+The Witness listens on port **5395**.
+In the array under "Quorum Witness" enter the IP of the Docker host and port **5395**.
 
 ---
 
-© 2025 – interne Dokumentation HPE Alletra Witness Container
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+© 2025 – Internal Documentation HPE Alletra Witness Container

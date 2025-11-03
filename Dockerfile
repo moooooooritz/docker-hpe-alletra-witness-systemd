@@ -1,10 +1,10 @@
-# rockylinux systemd basis
+# Rocky Linux systemd base
 FROM rockylinux/rockylinux:8.4
 
 ENV container=docker
 ENV WITNESS_PORT=5395
 
-# systemd aufräumen (klassisches pattern für systemd-in-docker)
+# Clean up systemd (classic pattern for systemd in docker)
 RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ "$i" = systemd-tmpfiles-setup.service ] || rm -f "$i"; done); \
     rm -f /lib/systemd/system/multi-user.target.wants/*; \
     rm -f /etc/systemd/system/*.wants/*; \
@@ -14,18 +14,18 @@ RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ "$i" = syste
     rm -f /lib/systemd/system/basic.target.wants/*; \
     rm -f /lib/systemd/system/anaconda.target.wants/*
 
-# Pakete
+# Packages
 RUN yum -y update && \
     yum -y install passwd net-tools psmisc mlocate epel-release openssl openssl-libs
 
-# Witness-RPM ins Image legen (Name im Build-Kontext!)
+# Place Witness-RPM in image (name in build context!)
 COPY hpe-alletra-witness-*.rpm /root/
 
-# RPM installieren
+# Install RPM
 RUN yum -y install /root/hpe-alletra-witness-*.rpm && \
     systemctl enable nimble-witnessd.service
 
-# für systemd im Container
+# For systemd in container
 VOLUME ["/sys/fs/cgroup"]
 EXPOSE 5395
 

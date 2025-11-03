@@ -1,0 +1,17 @@
+# Logs
+log/
+
+# Witness data
+witness/
+
+# RPM files
+*.rpm
+
+# macOS
+.DS_Store
+
+# Environment variables
+.env
+
+# Docker
+.dockerignore
