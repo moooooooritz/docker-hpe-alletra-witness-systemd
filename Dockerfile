@@ -7,6 +7,7 @@ LABEL maintainer="HPE" \
 
 ENV container=docker
 ENV WITNESS_PORT=5395
+ENV WITNESS_PASSWORD=witness123
 
 # Clean up systemd (classic pattern for systemd in docker)
 RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ "$i" = systemd-tmpfiles-setup.service ] || rm -f "$i"; done); \
@@ -24,6 +25,8 @@ COPY hpe-alletra-witness*.rpm /root/
 # Packages and Witness RPM installation
 RUN yum -y update && \
     yum -y install passwd net-tools psmisc mlocate epel-release openssl openssl-libs && \
+    useradd -r -s /sbin/nologin witness && \
+    echo "witness:$WITNESS_PASSWORD" | chpasswd && \
     yum -y install /root/hpe-alletra-witness-*.rpm && \
     systemctl enable nimble-witnessd.service && \
     yum clean all && \

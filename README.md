@@ -13,6 +13,7 @@ This Docker container setup is **not officially supported by HPE**. It provides 
 - Includes health checks
 - Supports persistent data mounts
 - Easy deployment with Docker Compose
+- Automatically creates witness user with configurable password
 
 ## Overview
 This setup creates a containerized **HPE Nimble/Alletra Witness** based on **Rocky Linux 8.4** with systemd.
@@ -29,6 +30,7 @@ It includes:
 - Witness-RPM in project directory:
   `hpe-alletra-witness-<version>.rpm` (obtain from infosight.hpe.com)
 - Host must support systemd-based containers (`--privileged`, `/sys/fs/cgroup` mounted)
+- Witness user is created automatically with default password "witness123" (configurable via `WITNESS_PASSWORD` environment variable)
 
 ---
 

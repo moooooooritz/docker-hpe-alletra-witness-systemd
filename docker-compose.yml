@@ -23,7 +23,7 @@ services:
       # Mount log directory to persist logs
       - ./log:/var/log/NimbleStorage
       # Mount private witness data directory
-      - ./witness/private:/opt/NimbleStorage/witness/var/private
+#      - ./witness/private:/opt/NimbleStorage/witness/var/private
     # Use host cgroup namespace for systemd
     cgroup: host
     # Health check to ensure the nimble-witnessd service is active
