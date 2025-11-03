@@ -11,7 +11,7 @@ This Docker container setup is **not officially supported by HPE**. It provides 
 
 - Based on Rocky Linux 8.4 with systemd
 - Includes health checks
-- Supports persistent data mounts
+- Supports persistent data mounts (private data, certificates, logs)
 - Easy deployment with Docker Compose
 - Automatically creates witness user with configurable password
 
@@ -43,6 +43,8 @@ It includes:
 ├── hpe-alletra-witness-<version>.rpm
 ├── log/
 └── witness/
+    ├── private/
+    └── certs/
 ```
 
 ---
@@ -80,9 +82,10 @@ docker build -t hpe-witness:1 .
 
 ```bash
 docker cp hpe-witness:/opt/NimbleStorage/witness/var/private ./witness
+docker cp hpe-witness:/opt/NimbleStorage/witness/config/certs ./witness
 ```
 
-Now exists on host: `./witness/private/...`
+Now exists on host: `./witness/private/...` and `./witness/certs/...`
 
 ---
 
@@ -103,7 +106,7 @@ Then on host:
 sudo chown -R 1000:1000 ./witness ./log
 sudo chmod -R 770 ./witness ./log
 ```
-(Replace with other UID/GID if different.)
+(Replace with other UID/GID if different. This sets permissions for private data, certificates, and logs.)
 
 ---
 
@@ -116,6 +119,7 @@ volumes:
   - /sys/fs/cgroup:/sys/fs/cgroup
   - ./log:/var/log/NimbleStorage
   - ./witness/private:/opt/NimbleStorage/witness/var/private
+  - ./witness/certs:/opt/NimbleStorage/witness/config/certs
 ```
 
 Then restart container:
