@@ -1,6 +1,10 @@
 # Rocky Linux systemd base
 FROM rockylinux/rockylinux:8.4
 
+LABEL maintainer="HPE" \
+      description="HPE Alletra Witness Docker Container" \
+      version="1.0"
+
 ENV container=docker
 ENV WITNESS_PORT=5395
 
@@ -14,16 +18,13 @@ RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ "$i" = syste
     rm -f /lib/systemd/system/basic.target.wants/*; \
     rm -f /lib/systemd/system/anaconda.target.wants/*
 
-# Packages
+# Packages and Witness RPM installation
 RUN yum -y update && \
-    yum -y install passwd net-tools psmisc mlocate epel-release openssl openssl-libs
-
-# Place Witness-RPM in image (name in build context!)
-COPY hpe-alletra-witness-*.rpm /root/
-
-# Install RPM
-RUN yum -y install /root/hpe-alletra-witness-*.rpm && \
-    systemctl enable nimble-witnessd.service
+    yum -y install passwd net-tools psmisc mlocate epel-release openssl openssl-libs && \
+    yum -y install /root/hpe-alletra-witness-*.rpm && \
+    systemctl enable nimble-witnessd.service && \
+    yum clean all && \
+    rm -f /root/hpe-alletra-witness-*.rpm
 
 # For systemd in container
 VOLUME ["/sys/fs/cgroup"]

@@ -4,6 +4,9 @@
 
 A containerized HPE Nimble/Alletra Witness service running on Rocky Linux with systemd.
 
+## Disclaimer
+This Docker container setup is **not officially supported by HPE**. It provides a modern alternative to running the Witness on an outdated CentOS 7 VM, but use at your own risk and ensure compatibility with your environment.
+
 ## Features
 
 - Based on Rocky Linux 8.4 with systemd
